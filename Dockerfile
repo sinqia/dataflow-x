@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 3000
 
 # Defina o comando para rodar a aplicação
-CMD ["npm", "dev"]
+CMD ["npm", "run", "dev"]
