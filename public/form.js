@@ -1,45 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io();
 
-    const form = document.createElement('form');
-    form.innerHTML = `
-        <label>
-            Origem:
-            <select id="origin">
-                <option value="ssot">ssot</option>
-                <option value="rentsoft" disabled>rentsoft</option>
-                <option value="salesforce" disabled>salesforce</option>
-            </select>
-        </label>
-        <label>
-            Table ID:
-            <input type="text" id="tableId" required>
-        </label>
-        <label>
-            Schema DB:
-            <input type="text" id="schemaDb" required>
-        </label>
-        <label>
-            Schema BQ:
-            <input type="text" id="schemaBq" value="raw" disabled>
-        </label>
-        <label>
-            Delete Existing:
-            <input type="checkbox" id="isDelete">
-        </label>
-        <label>
-            Create New:
-            <input type="checkbox" id="isCreate">
-        </label>
-        <label>
-            Manual Schema:
-            <input type="checkbox" id="isManualSchema">
-        </label>
-        <button type="submit">Submit</button>
-    `;
+    const form = document.getElementById('dataForm');
+    const statusDiv = document.getElementById('status');
 
-    const statusDiv = document.createElement('div');
-    statusDiv.id = 'status';
+    showForm('dataForm', 'Formulário de Dados');
 
     const saveToLocalStorage = () => {
         const formData = {
@@ -49,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
             isDelete: document.getElementById('isDelete').checked,
             isCreate: document.getElementById('isCreate').checked,
             origin: document.getElementById('origin').value,
-            isManualSchema: document.getElementById('isManualSchema').checked
+            isManualSchema: document.getElementById('isManualSchema').checked,
         };
         localStorage.setItem('formData', JSON.stringify(formData));
     };
@@ -67,9 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('isManualSchema').checked = formData.isManualSchema || false;
         }
     };
-
-    document.getElementById('root').appendChild(form);
-    document.getElementById('root').appendChild(statusDiv);
 
     loadFromLocalStorage();
 
@@ -92,17 +54,194 @@ document.addEventListener('DOMContentLoaded', () => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ tableId, schemaDb, schemaBq, isDelete, isCreate, origin, isManualSchema }),
+            body: JSON.stringify(
+                { 
+                    tableId,
+                    schemaDb,
+                    schemaBq,
+                    isDelete,
+                    isCreate,
+                    origin,
+                    isManualSchema,
+                    schema: false
+                }),
         });
 
         const data = await response.json();
-        console.log(data);
+
+        if (data.status && isManualSchema) {
+            showForm('manual-schema', 'Esquema Manual');
+            showSchema(data.schema);
+
+            document.getElementById('form-hidden').value = JSON.stringify(data.form);
+        }
     });
 
     socket.on('status', (message) => {
-        var newLine = document.createElement('div');
-        newLine.textContent = message;
-        // statusDiv.textContent += message + '\n';
-        statusDiv.appendChild(newLine);
+        // statusDiv.textContent = message;
+        var div = document.createElement('div');
+        div.textContent = message;
+        statusDiv.prepend(div);
+
+        // display the message in the
+        statusDiv.style.display = 'block';
+
     });
 });
+
+
+function showForm(form, value) {
+    // hide all forms
+    var forms = document.getElementsByClassName('form');
+    for (var i = 0; i < forms.length; i++) {
+        console.log(forms[i]);
+        forms[i].style.display = 'none';
+    }
+
+    // show the selected form
+    document.getElementById(form).style.display = 'block';
+
+    // troca o título
+    document.getElementById('title').textContent = value;
+
+}
+function createDivWithClass(className, textContent = '', title = '') {
+    const div = document.createElement('div');
+    div.className = className;
+    div.textContent = textContent;
+    if (title) {
+        div.title = title;
+    }
+    return div;
+}
+
+function createSelectElement(options, selectedOption) {
+    const select = document.createElement('select');
+    options.forEach(option => {
+        const optionElement = document.createElement('option');
+        optionElement.textContent = option;
+        if (option === selectedOption) {
+            optionElement.selected = true;
+        }
+        select.appendChild(optionElement);
+    });
+    return select;
+}
+
+function showSchema(schema) {
+    const formManualSchema = document.getElementById('manual-schema');
+
+    // Create and append div list
+    const divList = document.createElement('div');
+    divList.className = 'list';
+    formManualSchema.appendChild(divList);
+
+    // Header creation
+    const headerDiv = createDivWithClass('item header');
+    headerDiv.appendChild(createDivWithClass('', 'Name'));
+    headerDiv.appendChild(createDivWithClass('', 'Type'));
+    headerDiv.appendChild(createDivWithClass('', 'Input'));
+    divList.appendChild(headerDiv);
+
+    // Options for select elements
+    const options = [
+        'STRING', 'ARRAY', 'BIGNUMERIC', 'BOOLEAN', 'BYTES', 'DATE', 'DATETIME',
+        'FLOAT64', 'GEOGRAPHY', 'INT64', 'INTERVAL', 'JSON', 'NUMERIC', 'RANGE',
+        'STRUCT', 'TIME', 'TIMESTAMP'
+    ];
+
+    // Create a div for each item in the schema
+    schema.forEach(item => {
+        const itemDiv = createDivWithClass('item');
+        itemDiv.appendChild(createDivWithClass('', item.name, item.name));
+        itemDiv.appendChild(createDivWithClass('', item.type, item.type));
+
+        const select = createSelectElement(options, mapSqlTypeToBigQueryType(item.type));
+        const inputDiv = document.createElement('div');
+        inputDiv.appendChild(select);
+        itemDiv.appendChild(inputDiv);
+
+        divList.appendChild(itemDiv);
+    });
+
+    // Create and append submit button
+    const button = document.createElement('button');
+    button.textContent = 'Salvar';
+    formManualSchema.appendChild(button);
+    
+    button.addEventListener('click', async (e) => {
+
+        e.preventDefault();
+        const items = Array.from(document.getElementsByClassName('item'));
+        var schemaSet = items.map((item, i) => {
+            const name = item.children[0].textContent;
+            const typeOld = item.children[1].textContent;
+            const type = item?.children[2]?.children[0]?.value;
+            return { name, type, typeOld };
+        });
+
+        // remove o primeiro item que é o header
+        schemaSet.shift();
+
+        var formHidden = document.getElementById('form-hidden');
+        formHidden = JSON.parse(formHidden.value);
+        formHidden.isManualSchema = false;
+
+        showForm('progress', 'Formulário de Dados');
+
+        const response = await fetch('/api/process-data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                schema: schemaSet,
+                ...formHidden
+            }),
+        });
+
+        const data = await response.json();
+
+        // limpa o formulário
+        formManualSchema.innerHTML = '';
+        
+        showForm('dataForm', 'Formulário de Dados');
+    });
+}
+
+function mapSqlTypeToBigQueryType(sqlType) {
+    const typeMap = {
+        
+        'BIGINT': 'INT64', 
+        'INT': 'INT64', 
+        'SMALLINT': 'INT64', 
+        'TINYINT': 'INT64',
+        
+        'BIT': 'BOOLEAN', 
+        'DECIMAL': 'NUMERIC', 
+        'NUMERIC': 'NUMERIC', 
+        'FLOAT': 'FLOAT64',
+        
+        'REAL': 'FLOAT64', 
+        'MONEY': 'FLOAT64', 
+        'SMALLMONEY': 'FLOAT64', 
+        'DATE': 'DATE',
+        
+        'DATETIME': 'TIMESTAMP', 
+        'DATETIME2': 'TIMESTAMP', 
+        'SMALLDATETIME': 'TIMESTAMP',
+        
+        'TIME': 'TIME', 
+        'TIMESTAMP': 'TIMESTAMP', 
+        'DATETIMEOFFSET': 'TIMESTAMP',
+        
+        'CHAR': 'STRING', 
+        'VARCHAR': 'STRING', 
+        'TEXT': 'STRING', 
+        'NCHAR': 'STRING',
+        
+        'NVARCHAR': 'STRING', 
+        'NTEXT': 'STRING'
+    };
+    return typeMap[sqlType.toUpperCase()] || 'STRING';
+}

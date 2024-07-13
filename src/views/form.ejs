@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Transfer</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div id="root">
+        <h1 id="title">Ingestão</h1>
+        <form id="dataForm" class="form">
+            <label>
+                Origem:
+                <select id="origin">
+                    <option value="ssot">ssot</option>
+                    <option value="rentsoft" disabled>rentsoft</option>
+                    <option value="salesforce" disabled>salesforce</option>
+                </select>
+            </label>
+            <label>
+                Table ID:
+                <input type="text" id="tableId" required>
+            </label>
+            <label>
+                Schema DB:
+                <input type="text" id="schemaDb" required>
+            </label>
+            <label>
+                Schema BQ:
+                <input type="text" id="schemaBq" value="raw" readonly>
+            </label>
+            <label>
+                Delete Existing:
+                <input type="checkbox" id="isDelete">
+            </label>
+            <label>
+                Create New:
+                <input type="checkbox" id="isCreate">
+            </label>
+            <label>
+                Manual Schema:
+                <input type="checkbox" id="isManualSchema">
+            </label>
+            <button type="submit">Submit</button>
+        </form>
+
+        <form id="manual-schema" class="form"></form>
+
+        <form id="progress" class="form">
+            Processando...
+        </form>
+        <div id="status"></div>
+    </div>
+    <script src="/form.js"></script>
+    <input type="hidden" name="form-hidden" id="form-hidden" value="">
+</body>
+</html>

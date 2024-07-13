@@ -3,19 +3,50 @@ const { inferSchemaFromDb } = require('../services/schemaService');
 const { ensureDatasetExists, loadToBigQuery } = require('../services/bigQueryService');
 
 async function processData(req, res) {
-    const { tableId, schemaDb, schemaBq, isDelete, isCreate, origin } = req.body;
+    var {
+        tableId,
+        schemaDb,
+        schemaBq,
+        isDelete,
+        isCreate,
+        origin,
+        isManualSchema,
+        schema 
+    } = req.body;
+
     const io = req.app.get('socketio');
-    io.log = function (...args) {
-        io.emit('status', args.join(' '));
-        console.log(...args);
-    }
+    io.log = function (...args) { io.emit('status', args.join(' ')); console.log(...args) }
 
     try {
         await connectToSql(origin, io);
 
         const data = await fetchData(schemaDb, tableId, io);
-        const schema = await inferSchemaFromDb(schemaDb, tableId);
-        io.log(`Esquema inferido do SQL Server, ${schema.length} colunas`);
+
+        if(!schema){
+            var dataSchema = await inferSchemaFromDb(schemaDb, tableId);
+            schema = dataSchema.inferred;
+            io.log(`Esquema inferido do SQL Server, ${schema.length} colunas`);
+        }
+
+        if (isManualSchema) {
+            io.log('Usando esquema manual');
+
+            // redireciona para a rota de schema manual
+            return res.send({  
+                message: 'Usando esquema manual',
+                form:{
+                    tableId,
+                    schemaDb,
+                    schemaBq,
+                    isDelete,
+                    isCreate,
+                    origin,
+                    isManualSchema
+                },
+                schema: dataSchema.base,
+                status: true
+            });
+        }
 
         await ensureDatasetExists(schemaBq);
         io.log('Dataset BigQuery garantido');

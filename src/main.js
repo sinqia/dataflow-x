@@ -94,14 +94,19 @@ function mapSqlTypeToBigQueryType(sqlType) {
 // Função para inferir o esquema usando informações do banco de dados
 async function inferSchemaFromDb() {
     const schema = [];
+    const schemaBase = [];
     const tableSchema = await getTableSchema();
     
     tableSchema.forEach(column => {
         const bigQueryType = mapSqlTypeToBigQueryType(column.DATA_TYPE);
         schema.push({ name: column.COLUMN_NAME, type: bigQueryType });
+        schema.push({ name: column.COLUMN_NAME, type: column.DATA_TYPE });
     });
 
-    return schema;
+    return {
+        base: schemaBase,
+        inferred: schema
+    };
 }
 
 // Função para conectar ao SQL Server e buscar dados da tabela centroCusto
@@ -228,7 +233,7 @@ async function loadToBigQuery(data, schema) {
     const data = await fetchData();
     if (data) {
         const schema = await inferSchemaFromDb();
-        await loadToBigQuery(data, schema);
+        await loadToBigQuery(data, schema.inferred);
         console.log('Dados importados para o BigQuery com sucesso!');
     }
 })();

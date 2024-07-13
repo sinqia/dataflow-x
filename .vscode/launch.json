@@ -14,6 +14,16 @@
                 "dev"
             ],
             "cwd": "${workspaceFolder}"
-        }
+        },
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Attach to Docker",
+            "address": "localhost",
+            "port": 9229,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/app",
+            "protocol": "inspector"
+          }
     ]
 }

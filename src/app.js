@@ -8,6 +8,9 @@ const initializeSocket = require('./socket');
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -19,6 +22,11 @@ const server = http.createServer(app);
 const io = initializeSocket(server);
 
 app.set('socketio', io);
+
+app.get('/', (req, res) => {
+    res.render('form');
+});
+
 
 server.listen(port, () => {
     console.log(`Servidor rodando na porta http://localhost:${port}`);

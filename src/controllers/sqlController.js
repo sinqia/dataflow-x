@@ -8,7 +8,7 @@ async function getSqlData(req, res) {
         await connectToSql();
         const data = await fetchData(schemadb, table);
         const schema = await inferSchemaFromDb(schemadb, table);
-        res.json({ data, schema });
+        res.json({ data, schema: schema.inferred });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
