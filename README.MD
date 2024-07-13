@@ -35,3 +35,5 @@ docker stop <nome-do-container>
 docker rm <nome-do-container>
 docker exec -it dataflow-x-app-1 sh
 docker ps -a
+git config credential.username username1
+

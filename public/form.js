@@ -31,6 +31,10 @@ document.addEventListener('DOMContentLoaded', () => {
             Create New:
             <input type="checkbox" id="isCreate">
         </label>
+        <label>
+            Manual Schema:
+            <input type="checkbox" id="isManualSchema">
+        </label>
         <button type="submit">Submit</button>
     `;
 
@@ -45,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
             isDelete: document.getElementById('isDelete').checked,
             isCreate: document.getElementById('isCreate').checked,
             origin: document.getElementById('origin').value,
+            isManualSchema: document.getElementById('isManualSchema').checked
         };
         localStorage.setItem('formData', JSON.stringify(formData));
     };
@@ -59,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('isDelete').checked = formData.isDelete || false;
             document.getElementById('isCreate').checked = formData.isCreate || false;
             document.getElementById('origin').value = formData.origin || 'ssot';
+            document.getElementById('isManualSchema').checked = formData.isManualSchema || false;
         }
     };
 
@@ -79,13 +85,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const isDelete = document.getElementById('isDelete').checked;
         const isCreate = document.getElementById('isCreate').checked;
         const origin = document.getElementById('origin').value;
+        const isManualSchema = document.getElementById('isManualSchema').checked;
 
         const response = await fetch('/api/process-data', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ tableId, schemaDb, schemaBq, isDelete, isCreate, origin }),
+            body: JSON.stringify({ tableId, schemaDb, schemaBq, isDelete, isCreate, origin, isManualSchema }),
         });
 
         const data = await response.json();
