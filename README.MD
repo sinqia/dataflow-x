@@ -23,3 +23,9 @@ project-root/
 ├── .env
 ├── app.js
 └── package.json
+
+
+# docker
+docker build -t dataflow-x .
+docker-compose up
+
