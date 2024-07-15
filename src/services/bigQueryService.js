@@ -88,6 +88,7 @@ async function loadToBigQuery(datasetId, tableId, data, schema, isDelete, isCrea
         io.log('Dados inseridos no BigQuery com sucesso.');
     } catch (err) {
         io.log('Erro ao inserir dados no BigQuery:', err);
+        throw err;
     }
 }
 

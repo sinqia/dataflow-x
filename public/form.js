@@ -94,7 +94,6 @@ function showForm(form, value) {
     // hide all forms
     var forms = document.getElementsByClassName('form');
     for (var i = 0; i < forms.length; i++) {
-        console.log(forms[i]);
         forms[i].style.display = 'none';
     }
 

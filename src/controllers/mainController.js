@@ -50,7 +50,7 @@ async function processData(req, res) {
 
         await ensureDatasetExists(schemaBq);
         io.log('Dataset BigQuery garantido');
-
+        
         await loadToBigQuery(schemaBq, `${origin}_${tableId}`, data, schema, isDelete, isCreate, 20, io);
         io.log('Dados carregados no BigQuery');
         io.log(`link: https://console.cloud.google.com/bigquery?ws=!1m5!1m4!4m3!1sssot-391717!2sraw!3s${origin}_${tableId}`);
