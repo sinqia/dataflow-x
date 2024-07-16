@@ -1,7 +1,11 @@
 const express = require('express');
 const { getSqlData } = require('../controllers/sqlController');
 const { loadDataToBigQuery } = require('../controllers/bigQueryController');
-const { fetchCloudSchedulerJobs, createCloudSchedulerJob } = require('../controllers/cloudSchedulerController');
+const {
+    fetchCloudSchedulerJobs,
+    createCloudSchedulerJob,
+    deleteCloudSchedulerJob
+} = require('../controllers/cloudSchedulerController');
 const { processData } = require('../controllers/mainController');
 
 
@@ -21,5 +25,8 @@ router.get('/cloud-scheduler', fetchCloudSchedulerJobs);
 
 // Create a new Cloud Scheduler job
 router.post('/cloud-scheduler', createCloudSchedulerJob);
+
+// Delete a Cloud Scheduler job
+router.delete('/cloud-scheduler/:jobName', deleteCloudSchedulerJob);
 
 module.exports = router;

@@ -1,4 +1,4 @@
-const { cloudSchedulerJobsGet, cloudSchedulerJobCreate } = require('../services/cloudScheduler');
+const { cloudSchedulerJobsGet, cloudSchedulerJobCreate, cloudSchedulerJobDelete } = require('../services/cloudScheduler');
 
 
 async function fetchCloudSchedulerJobs(req, res) {
@@ -20,4 +20,14 @@ async function createCloudSchedulerJob(req, res) {
     }
 }
 
-module.exports = { fetchCloudSchedulerJobs, createCloudSchedulerJob };
+async function deleteCloudSchedulerJob(req, res) {
+    try {
+        const jobName = req.params.jobName;
+        const job = await cloudSchedulerJobDelete(jobName);
+        res.json(job);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+module.exports = { fetchCloudSchedulerJobs, createCloudSchedulerJob, deleteCloudSchedulerJob };
