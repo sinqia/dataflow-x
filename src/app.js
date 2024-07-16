@@ -26,6 +26,9 @@ app.set('socketio', io);
 app.get('/', (req, res) => {
     res.render('form');
 });
+app.get('/jobs', (req, res) => {
+    res.render('jobs');
+});
 
 
 server.listen(port, () => {

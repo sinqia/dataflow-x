@@ -91,5 +91,7 @@ async function loadToBigQuery(datasetId, tableId, data, schema, isDelete, isCrea
         throw err;
     }
 }
-
-module.exports = { ensureDatasetExists, loadToBigQuery };
+module.exports = {
+    ensureDatasetExists,
+    loadToBigQuery
+};

@@ -1,130 +1,166 @@
 /* @import "normalize.css" layer(https://unpkg.com/normalize.css); */
 
-  @font-face {
-    font-family: "Geist Sans";
-    src: url("https://assets.codepen.io/605876/GeistVF.ttf") format("truetype");
-  }
+@font-face {
+  font-family: "Geist Sans";
+  src: url("https://assets.codepen.io/605876/GeistVF.ttf") format("truetype");
+}
 
-  *,
-  *:after,
-  *:before {
-    box-sizing: border-box;
-  }
+*,
+*:after,
+*:before {
+  box-sizing: border-box;
+}
 
-  body {
-    display: flex;
-    place-items: center;
-    min-height: 100vh;
-    font-family: "Geist Sans", "SF Pro Text", "SF Pro Icons", "AOS Icons", "Helvetica Neue", Helvetica, Arial, sans-serif, system-ui;
-    background: hsl(0 0% 6%);
-  }
+body {
+  display: flex;
+  place-items: center;
+  min-height: 100vh;
+  font-family: "Geist Sans", "SF Pro Text", "SF Pro Icons", "AOS Icons", "Helvetica Neue", Helvetica, Arial, sans-serif, system-ui;
+  background: hsl(0 0% 6%);
+}
 
-  body::before {
-    --line: hsl(0 0% 95% / 0.15);
-    content: "";
-    height: 100vh;
-    width: 100vw;
-    position: fixed;
-    background: linear-gradient(90deg, var(--line) 1px, transparent 1px 10vmin) 0 -5vmin / 10vmin 10vmin,
+body::before {
+  --line: hsl(0 0% 95% / 0.15);
+  content: "";
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  background: linear-gradient(90deg, var(--line) 1px, transparent 1px 10vmin) 0 -5vmin / 10vmin 10vmin,
     linear-gradient(var(--line) 1px, transparent 1px 10vmin) 0 -5vmin / 10vmin 10vmin;
-    mask: linear-gradient(-15deg, transparent 30%, white);
-    top: 0;
-    z-index: -1;
-    transform: translate3d(0, 0, -100vmin);
-  }
+  mask: linear-gradient(-15deg, transparent 30%, white);
+  top: 0;
+  z-index: -1;
+  transform: translate3d(0, 0, -100vmin);
+}
 
-  body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    place-items: center;
-    color: white;
-    justify-content: center;
-    align-items: center;
-  }
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  place-items: center;
+  color: white;
+  justify-content: center;
+  align-items: center;
+}
 
-  h1 {
-    text-align: center;
-  }
+h1 {
+  text-align: center;
+}
 
-  form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    background: white;
-    color: black;
-    padding: 40px;
-    border-radius: 10px;
-    display: none;
-  }
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  color: black;
+  padding: 40px;
+  border-radius: 10px;
+  display: none;
+}
 
-  form label {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
+form label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
 
-  button {
-    padding: 0.5rem 1rem;
-  }
+button {
+  padding: 0.5rem 1rem;
+}
 
-  #status {
-    margin-top: 2rem;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    background: white;
-    color: black;
-    padding: 10px;
-    border: 1px solid;
-    width: 340px;
-    height: 160px;
-    overflow: auto;
-    border-radius: 12px;
-    display: none;
-    bottom: 23px;
-    right: 23px;
-  }
+#status {
+  margin-top: 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  background: white;
+  color: black;
+  padding: 10px;
+  border: 1px solid;
+  width: 340px;
+  height: 160px;
+  overflow: auto;
+  border-radius: 12px;
+  display: none;
+  bottom: 23px;
+  right: 23px;
+}
 
-  input, select, label {
-    width: 100%;
-    min-width: 214px;
-  }
+input,
+select,
+label {
+  width: 100%;
+  min-width: 214px;
+}
 
-  input[type=text], select {
-    height: 32px;
-    margin: 5px 0px 15px 0;
-  }
+input[type=text],
+select {
+  height: 32px;
+  margin: 5px 0px 15px 0;
+}
 
-  #manual-schema {
-    display: none;
-    min-width: 600px;
-  }
+#manual-schema {
+  display: none;
+  min-width: 600px;
+}
 
-  #manual-schema .item {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    align-content: center;
-    flex-wrap: nowrap;
-    flex-direction: row;
-    padding: 4px;
-  }
+#manual-schema .item {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  align-content: center;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  padding: 4px;
+}
 
-  #manual-schema .item.header{
-    font-weight: bold;
-  
-  }
+#manual-schema .item.header {
+  font-weight: bold;
 
-  #manual-schema .item div {
-    width: calc(100% / 3);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+}
 
-  #manual-schema select {
-    min-width: auto;
-    width: 100%;
-  }
+#manual-schema .item div {
+  width: calc(100% / 3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#manual-schema select {
+  min-width: auto;
+  width: 100%;
+}
+
+
+#root {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  align-items: center;
+}
+
+
+
+#jobs-container {
+  width: 80%;
+  margin-top: 20px;
+  color: black;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+th, td {
+  padding: 10px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+th {
+  background-color: #f4f4f4;
+}

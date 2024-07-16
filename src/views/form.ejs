@@ -15,35 +15,35 @@
                 Origem:
                 <select id="origin">
                     <option value="ssot">ssot</option>
-                    <option value="rentsoft" disabled>rentsoft</option>
+                    <option value="rentsoft">rentsoft</option>
                     <option value="salesforce" disabled>salesforce</option>
                 </select>
             </label>
             <label>
-                Table ID:
-                <input type="text" id="tableId" required>
-            </label>
-            <label>
-                Schema DB:
+                Schema do banco de origem:
                 <input type="text" id="schemaDb" required>
             </label>
             <label>
-                Schema BQ:
+                Nome da tabela:
+                <input type="text" id="tableId" required>
+            </label>
+            <label>
+                Schema do big query
                 <input type="text" id="schemaBq" value="raw" readonly>
             </label>
             <label>
-                Delete Existing:
+                Apagar a tabela de origem:
                 <input type="checkbox" id="isDelete">
             </label>
             <label>
-                Create New:
+                Criar a tabela no Big Query:
                 <input type="checkbox" id="isCreate">
             </label>
             <label>
-                Manual Schema:
+                Configuração manual do schema:
                 <input type="checkbox" id="isManualSchema">
             </label>
-            <button type="submit">Submit</button>
+            <button type="submit">Enviar</button>
         </form>
 
         <form id="manual-schema" class="form"></form>

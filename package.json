@@ -5,17 +5,20 @@
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon --inspect=0.0.0.0:9229 src/app.js"
+    "dev": "nodemon src/app.js",
+    "debugger": "nodemon --inspect=0.0.0.0:9229 src/app.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@google-cloud/bigquery": "^7.8.0",
     "avro-js": "^1.11.3",
+    "axios": "^1.7.2",
     "body-parser": "^1.20.2",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
+    "google-auth-library": "^9.11.0",
     "mssql": "^11.0.1",
     "socketio": "^1.0.0"
   },
