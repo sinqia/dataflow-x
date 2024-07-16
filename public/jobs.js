@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    fetch('/api/jobs')
+    fetch('/api/cloud-scheduler')
         .then(response => response.json())
         .then(data => displayJobs(data))
         .catch(error => console.error('Error fetching jobs:', error));

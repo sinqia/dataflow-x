@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
             isCreate: document.getElementById('isCreate').checked,
             origin: document.getElementById('origin').value,
             isManualSchema: document.getElementById('isManualSchema').checked,
+            isSchedule: document.getElementById('isSchedule').checked,
+            scheduleCron: document.getElementById('scheduleCron').value,
         };
         localStorage.setItem('formData', JSON.stringify(formData));
     };
@@ -30,6 +32,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('isCreate').checked = formData.isCreate || false;
             document.getElementById('origin').value = formData.origin || 'ssot';
             document.getElementById('isManualSchema').checked = formData.isManualSchema || false;
+            document.getElementById('isSchedule').checked = formData.isSchedule || false;
+            document.getElementById('scheduleCron').value = formData.scheduleCron || '';
+
+            scheduleSwitch();
         }
     };
 
@@ -48,6 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const isCreate = document.getElementById('isCreate').checked;
         const origin = document.getElementById('origin').value;
         const isManualSchema = document.getElementById('isManualSchema').checked;
+        const isSchedule = document.getElementById('isSchedule').checked;
+        const scheduleCron = document.getElementById('scheduleCron').value;
+
 
         const response = await fetch('/api/process-data', {
             method: 'POST',
@@ -63,7 +72,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     isCreate,
                     origin,
                     isManualSchema,
-                    schema: false
+                    schema: false,
+                    isSchedule,
+                    scheduleCron
                 }),
         });
 
@@ -77,6 +88,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Add event listener for the schedule switch
+    document.getElementById('isSchedule').addEventListener('change', scheduleSwitch);
+
+    // Socket events
     socket.on('status', (message) => {
         // statusDiv.textContent = message;
         var div = document.createElement('div');
@@ -104,6 +119,7 @@ function showForm(form, value) {
     document.getElementById('title').textContent = value;
 
 }
+
 function createDivWithClass(className, textContent = '', title = '') {
     const div = document.createElement('div');
     div.className = className;
@@ -243,4 +259,15 @@ function mapSqlTypeToBigQueryType(sqlType) {
         'NTEXT': 'STRING'
     };
     return typeMap[sqlType.toUpperCase()] || 'STRING';
+}
+
+function scheduleSwitch() {
+    var checkBox = document.getElementById("isSchedule");
+    
+    if (checkBox.checked == true){
+        document.getElementById("schedule").style.display = "block";
+    }
+    else {
+        document.getElementById("schedule").style.display = "none";
+    }
 }

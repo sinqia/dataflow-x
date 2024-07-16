@@ -11,6 +11,10 @@
   box-sizing: border-box;
 }
 
+.hidden {
+  display: none;
+}
+
 body {
   display: flex;
   place-items: center;
@@ -91,7 +95,7 @@ input,
 select,
 label {
   width: 100%;
-  min-width: 214px;
+  min-width: 120px;
 }
 
 input[type=text],

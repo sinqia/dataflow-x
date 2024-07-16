@@ -43,6 +43,14 @@
                 Configuração manual do schema:
                 <input type="checkbox" id="isManualSchema">
             </label>
+            <label>
+                Agendar execução:
+                <input type="checkbox" id="isSchedule">
+            </label>
+            <label class="hidden" id="schedule">
+                Agendamento:
+                <input type="text" id="scheduleCron" value="0 7 * * *">
+            </label>
             <button type="submit">Enviar</button>
         </form>
 

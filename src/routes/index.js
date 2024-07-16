@@ -1,7 +1,7 @@
 const express = require('express');
 const { getSqlData } = require('../controllers/sqlController');
 const { loadDataToBigQuery } = require('../controllers/bigQueryController');
-const { fetchCloudSchedulerJobs } = require('../controllers/cloudSchedulerController');
+const { fetchCloudSchedulerJobs, createCloudSchedulerJob } = require('../controllers/cloudSchedulerController');
 const { processData } = require('../controllers/mainController');
 
 
@@ -17,6 +17,9 @@ router.post('/bigquery-load', loadDataToBigQuery);
 router.post('/process-data', processData);
 
 // Rota para obter jobs do Cloud Scheduler
-router.get('/jobs', fetchCloudSchedulerJobs);
+router.get('/cloud-scheduler', fetchCloudSchedulerJobs);
+
+// Create a new Cloud Scheduler job
+router.post('/cloud-scheduler', createCloudSchedulerJob);
 
 module.exports = router;
