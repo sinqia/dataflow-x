@@ -2,10 +2,10 @@ const sql = require('mssql');
 const { sqlConfig } = require('../config/config');
 
 async function connectToSql(origin, io = console.log) {
-    io.log('Conectando ao SQL Server');
+    io.log(`Conectando ao SQL Server ${origin}`);
     try {
         await sql.connect(sqlConfig[origin]);
-        io.log('Conectado ao SQL Server');
+        io.log(`Conectado ao SQL Server ${origin}`);
 
         return
     } catch (err) {

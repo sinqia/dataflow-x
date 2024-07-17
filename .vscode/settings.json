@@ -1,0 +1,8 @@
+{
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/829ab079-21e8-4063-bab9-df5b9a3f455b/resourceGroups/RG_TSI/providers/Microsoft.Web/sites/sq-tsi-api-dataflow-x",
+    "appService.deploySubpath": "."
+}
