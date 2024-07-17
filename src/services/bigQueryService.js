@@ -50,29 +50,29 @@ async function loadToBigQuery(datasetId, tableId, data, schema, isDelete, isCrea
         }
     }
 
-    // if (isCreate) {
-    //     try {
-    //         await dataset.createTable(tableId, { schema });
-    //         io.log(`Tabela ${tableId} criada com sucesso.`);
+    if (isCreate) {
+        try {
+            await dataset.createTable(tableId, { schema });
+            io.log(`Tabela ${tableId} criada com sucesso.`);
 
-    //         let tableExists = await ensureTableExists(dataset, tableId);
-    //         let attempts = 0;
+            let tableExists = await ensureTableExists(dataset, tableId);
+            let attempts = 0;
 
-    //         while (!tableExists && attempts < attemptsMax) {
-    //             io.log('Esperando pela criação da tabela...');
-    //             await new Promise(resolve => setTimeout(resolve, 2000));
-    //             tableExists = await ensureTableExists(dataset, tableId);
-    //             attempts++;
-    //         }
+            while (!tableExists && attempts < attemptsMax) {
+                io.log('Esperando pela criação da tabela...');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                tableExists = await ensureTableExists(dataset, tableId);
+                attempts++;
+            }
 
-    //         if (!tableExists) {
-    //             throw new Error(`Tabela ${tableId} não foi encontrada após a criação.`);
-    //         }
-    //     } catch (err) {
-    //         io.log('Erro ao criar a tabela no BigQuery:', err);
-    //         return;
-    //     }
-    // }
+            if (!tableExists) {
+                throw new Error(`Tabela ${tableId} não foi encontrada após a criação.`);
+            }
+        } catch (err) {
+            io.log('Erro ao criar a tabela no BigQuery:', err);
+            return;
+        }
+    }
 
     const convertedData = convertDataTypes(data);
 
@@ -173,6 +173,7 @@ async function toParquet(arrData, schema, folderParquet, filePath) {
         await writer.close();
     } catch (error) {
         console.error('Erro ao salvar dados em arquivo Parquet:', error);
+        throw error;
     }
 }
 
@@ -197,8 +198,10 @@ function schemaBqToParquet(schema) {
     for (let i = 0; i < schema.length; i++) {
         const column = schema[i];
         schemaParquet[column.name] = { type: typeMapping[column.type], optional: true };
+
         if (!typeMapping[column.type]) {
             console.log(`Tipo de dado ${column.type} não mapeado para o Parquet`);
+            throw new Error(`Tipo de dado ${column.type} não mapeado para o Parquet`);
 
         }
     }
