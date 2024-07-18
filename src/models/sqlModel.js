@@ -2,14 +2,14 @@ var sql = require('mssql');
 const { sqlConfig } = require('../config/config');
 
 async function connectToSql(origin, io = console) {
-    io.log(`Conectando ao SQL Server ${origin}`);
+    io.log(`[Database] Conectando... ${origin}`);
     try {
        await sql.connect(sqlConfig[origin]);
-        io.log(`Conectado ao SQL Server ${origin}`);
+        io.log(`[Database] Conectado ${origin}`);
 
         return
     } catch (err) {
-        io.log('Erro ao conectar ao SQL Server');
+        io.log(`[Database] Erro ao conectar ${origin}:`, err.message);
         throw err;
     }
 }
@@ -31,7 +31,7 @@ async function fetchTableSchema(origin, schemadb, table) {
         const result = await connection.query(query);
         return result.recordset;
     } catch (err) {
-        console.error('Erro ao obter o esquema da tabela do SQL Server:', err);
+        console.error('[Database] Erro ao buscar schema da tabela', err);
         throw err;
     } finally {
         closeConnection();
@@ -41,15 +41,15 @@ async function fetchTableSchema(origin, schemadb, table) {
 async function fetchData(origin, schemadb, table, io = console) {
     connection = await sql.connect(sqlConfig[origin]);
 
-    io.log(`Buscando dados da tabela ${table}`);
+    io.log(`[Database] Buscando dados da tabela ${table}`);
 
     const query = `SELECT * FROM ${schemadb}.${table}`;
     try {
         const result = await connection.query(query);
-        io.log(`Dados da tabela ${table} buscados com sucesso, ${result.recordset.length} linhas retornadas`);
+        io.log(`[Database] Dados da tabela ${table} buscados com sucesso, ${result.recordset.length} linhas retornadas`);
         return result.recordset;
     } catch (err) { 
-        io.log(`Erro ao buscar dados da tabela ${table}`);
+        io.log(`[Database] Erro ao buscar dados da tabela ${table}`);
         throw err;
     } finally {
         closeConnection();

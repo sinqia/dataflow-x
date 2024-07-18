@@ -5,17 +5,20 @@ const path = require('path');
 // const { ParquetWriter } = require('parquets');
 const parquet = require('parquets'); // Adicione isto se ainda não estiver presente
 const rootPath = path.resolve(__dirname, '../..');
+const package = require('../../package.json');
 
 
 const bigquery = new BigQuery(bigQueryConfig);
 
 async function ensureDatasetExists(datasetId) {
-    const dataset = bigquery.dataset(datasetId);
-    const [exists] = await dataset.exists();
-    if (!exists) {
-        await dataset.create();
-        console.log(`Dataset ${datasetId} criado com sucesso.`);
-    }
+    // const dataset = bigquery.dataset(datasetId);
+    // const [exists] = await dataset.exists();
+    // if (!exists) {
+    //     await dataset.create();
+    //     console.log(`[BigQuery] Dataset ${datasetId} criado com sucesso.`);
+    // }
+
+    return true;
 }
 
 async function ensureTableExists(dataset, tableId) {
@@ -25,41 +28,52 @@ async function ensureTableExists(dataset, tableId) {
 }
 
 function convertDataTypes(data) {
-    return data.map(row => {
-        const newRow = { ...row };
-        for (const key in newRow) {
-            if (typeof newRow[key] === 'boolean') {
-                newRow[key] = newRow[key].toString();
-            }
-        }
-        return newRow;
-    });
+    return data;
+    // return data.map(row => {
+    //     const newRow = { ...row };
+    //     for (const key in newRow) {
+    //         if (typeof newRow[key] === 'boolean') {
+    //             newRow[key] = newRow[key].toString();
+    //         }
+    //     }
+    //     return newRow;
+    // });
 }
 
-async function loadToBigQuery(datasetId, tableId, data, schema, isDelete, isCreate, attemptsMax, io = console) {
-    const dataset = bigquery.dataset(datasetId);
+// async function loadToBigQuery(datasetId, tableId, data, schema, isDelete, isCreate, attemptsMax, origin, io = console) {
+async function loadToBigQuery(form, data, attemptsMax, io = console) {
+    const tableId = form.name;
+    const dataset = bigquery.dataset(form.schemaBq);
     const tablebq = dataset.table(tableId);
 
-    if (isDelete) {
+    if (form.isDelete) {
         try {
-            io.log(`Excluindo tabela ${tableId}...`);
+            io.log(`[BigQuery] Excluindo tabela ${tableId}...`);
             await tablebq.delete({ ignoreNotFound: true });
-            io.log(`Tabela ${tableId} excluída com sucesso.`);
+            io.log(`[BigQuery] Tabela ${tableId} excluída com sucesso.`);
         } catch (err) {
-            io.log('Erro ao excluir a tabela no BigQuery:', err);
+            io.log('[BigQuery] Erro ao excluir a tabela no BigQuery:', err);
         }
     }
 
-    if (isCreate) {
+    if (form.isCreate) {
         try {
-            await dataset.createTable(tableId, { schema });
-            io.log(`Tabela ${tableId} criada com sucesso.`);
+            await dataset.createTable(tableId, {
+                schema: form.schema,
+                description: 'Tabela criada automaticamente pelo sistema de integração.',
+                labels: {
+                    origin: form.origin,
+                    ingestion_tool: package.name,
+                    schedule: form.isSchedule ? form.scheduleCron : 'manual',
+                },
+            });
+            io.log(`[BigQuery] Tabela ${tableId} criada com sucesso.`);
 
             let tableExists = await ensureTableExists(dataset, tableId);
             let attempts = 0;
 
             while (!tableExists && attempts < attemptsMax) {
-                io.log('Esperando pela criação da tabela...');
+                io.log('[BigQuery] Esperando pela criação da tabela...');
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 tableExists = await ensureTableExists(dataset, tableId);
                 attempts++;
@@ -69,17 +83,18 @@ async function loadToBigQuery(datasetId, tableId, data, schema, isDelete, isCrea
                 throw new Error(`Tabela ${tableId} não foi encontrada após a criação.`);
             }
         } catch (err) {
-            io.log('Erro ao criar a tabela no BigQuery:', err);
+            io.log('[BigQuery] Erro ao criar a tabela no BigQuery:', err);
             return;
         }
     }
 
-    const convertedData = convertDataTypes(data);
+    // const convertedData = convertDataTypes(data);
 
     try {
-        await insertBiqueryParquet(tableId, datasetId, convertedData, schema, io);
+        io.log(`[BigQuery] Inserindo dados na tabela ${tableId}...`);
+        await insertBiqueryParquet(tableId, form.schemaBq, data, form.schema, io);
     } catch (err) {
-        io.log('Erro ao inserir dados no BigQuery:', err);
+        io.log('[BigQuery] Erro ao inserir dados no BigQuery:', err);
         throw err;
     }
 }
@@ -103,12 +118,11 @@ async function insertData(table, data, batchSize, io = console) {
         }
     }
 
-    io.log('All data inserted successfully.');
+    io.log('[BigQuery] All data inserted successfully.');
 }
 
 async function insertBiqueryParquet(tableId, datasetId, arrData, schema, io = console) {
     const size = 5000; // Tamanho do grupo de registros a serem enviados para o bq
-    // const folderParquet = rootPath`/temp/${tableId}-bq-parquet`;
     const folderParquet = path.resolve(rootPath, 'temp', `${tableId}-bq-parquet`);
     const arrJobs = []; // Array de jobs
 
@@ -118,16 +132,18 @@ async function insertBiqueryParquet(tableId, datasetId, arrData, schema, io = co
         groups.push(arrData.slice(i, i + size));
     }
 
-    // Insere os dados no BigQuery
+    // Conversão dos dados para o formato Parquet e salvamento em arquivos
+    io.log(`[LoadBigQuery] Salvando dados em arquivos Parquet...`);
     for (let i = 0; i < groups.length; i++) {
         await toParquet(groups[i], schema, folderParquet, `${tableId}_${i}.parquet`);
     }
 
     // Carrega os arquivos parquet no BigQuery
+    io.log(`[LoadBigQuery] Carregando arquivos no BigQuery...`);
     for (let i = 0; i < groups.length; i++) {
         const fileName = `${tableId}_${i}.parquet`;
         const progress = ((i + 1) / groups.length) * 100;
-        io.log(`Status load: ${tableId} (${i + 1}/${groups.length}) - ${progress.toFixed(2)}% concluído`);
+        io.log(`[BigQuery] Load ${tableId} (${i + 1}/${groups.length}) - ${progress.toFixed(2)}% concluído`);
         let resJob = await insertDataIntoBigQueryParquet(datasetId, tableId, folderParquet, fileName);
         arrJobs.push(resJob);
     }
@@ -250,7 +266,7 @@ async function insertDataIntoBigQueryParquet(datasetId, tableId, folderParquet, 
     // Configuração da tarefa de carregamento
     const metadata = {
         sourceFormat: 'PARQUET',
-        location: 'southamerica-east1' 
+        location: 'southamerica-east1'
     };
 
     // Caminho completo para o arquivo Parquet

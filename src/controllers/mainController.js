@@ -22,11 +22,11 @@ async function processData(req, res) {
         if (!form.schema) {
             var dataSchema = await inferSchemaFromDb(form.origin, form.schemaDb, form.tableId);
             form.schema = dataSchema.inferred;
-            io.log(`Esquema inferido do SQL Server, ${form.schema.length} colunas`);
+            io.log(`[Database] Esquema inferido: ${form.schema.length} colunas`);
         }
 
         if (form.isManualSchema) {
-            io.log('Usando esquema manual');
+            io.log('[Database] Usando esquema manual');
 
             // redireciona para a rota de schema manual
             return res.send({
@@ -38,19 +38,19 @@ async function processData(req, res) {
         }
 
         await ensureDatasetExists(form.schemaBq);
-        io.log('Dataset BigQuery garantido');
+        io.log('[Database] Dataset BigQuery garantido');
 
         // Parametro para o processamento do bigQuery ser async
         if(!form?.isAsync) {
 
-            await loadToBigQuery(form.schemaBq, form.name, data, form.schema, form.isDelete, form.isCreate, 20, io);
-            io.log('Dados carregados no BigQuery');
+            await loadToBigQuery(form, data, 20, io);
+            io.log('[BigQuery] Dados carregados');
         } else {
-            loadToBigQuery(form.schemaBq, form.name, data, form.schema, form.isDelete, form.isCreate, 20, io);
+            loadToBigQuery(form, data, 20, io);
         }
 
         if (form.isSchedule) {
-            io.log('Criando job no Cloud Scheduler');
+            io.log('[Scheduler] Criando job no Cloud Scheduler');
             const jobData = {
                 jobName: `${package.name}_${form.name}`,
                 schedule: form.scheduleCron,
@@ -76,9 +76,9 @@ async function processData(req, res) {
             jobData.jobName = jobData.jobName.replace(/_/g, '-');
 
             await cloudSchedulerJobDelete(jobData.jobName, io);
-            io.log('Job deletado do Cloud Scheduler');
+            io.log('[Scheduler] Job deletado');
             await cloudSchedulerJobCreate(jobData, io);
-            io.log('Job criado no Cloud Scheduler');
+            io.log('[Scheduler] Job criado');
         }
 
         form.link = `https://console.cloud.google.com/bigquery?ws=!1m5!1m4!4m3!1sssot-391717!2sraw!3s${form.name}&project=ssot-391717`;

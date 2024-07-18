@@ -37,7 +37,7 @@ async function cloudSchedulerJobsGet(pageSize, io = console) {
 }
 
 async function cloudSchedulerJobCreate(jobData, io = console) {
-    io.log(`[cloudSchedulerJobCreate] Creating job ${jobData.jobName}`);
+    io.log(`[Scheduler] Creating job ${jobData.jobName}`);
     const projectId = process.env.GCP_PROJECT_ID;
     const locationId = process.env.GCP_LOCATION_ID;
     const url = `https://cloudscheduler.googleapis.com/v1beta1/projects/${projectId}/locations/${locationId}/jobs`;
@@ -78,17 +78,17 @@ async function cloudSchedulerJobCreate(jobData, io = console) {
     try {
         // Faz a requisição POST para a API
         const response = await axios.post(url, job, { headers });
-        io.log(`[cloudSchedulerJobCreate] Success: Job ${jobData.jobName} created`);
+        io.log(`[Scheduler] Success: Job ${jobData.jobName} created`);
         return response.data;
     } catch (error) {
-        io.log(`[cloudSchedulerJobCreate] Error: ${error.response.status}`);
+        io.log(`[Scheduler] Error: ${error.response.status}`);
         io.log(error.response.status, error.response.data);
         throw error;
     }
 }
 
 async function cloudSchedulerJobDelete(jobName, io = console) {
-    io.log(`[cloudSchedulerJobDelete] Deleting job ${jobName}`);
+    io.log(`[Scheduler] Deleting job ${jobName}`);
     const projectId = process.env.GCP_PROJECT_ID;
     const locationId = process.env.GCP_LOCATION_ID;
     const url = `https://cloudscheduler.googleapis.com/v1beta1/projects/${projectId}/locations/${locationId}/jobs/${jobName}`;
@@ -113,10 +113,10 @@ async function cloudSchedulerJobDelete(jobName, io = console) {
     try {
         // Faz a requisição DELETE para a API
         const response = await axios.delete(url, { headers });
-        io.log(`[cloudSchedulerJobDelete] Success: Job ${jobName} deleted`);
+        io.log(`[Scheduler] Success: Job ${jobName} deleted`);
         return response.data;
     } catch (error) {
-        io.log(`[cloudSchedulerJobDelete] Error: ${error.response.status}`);
+        io.log(`[Scheduler] Error: ${error.response.status}`);
         io.log(error?.response?.status, error?.response?.data);
     }
 }
