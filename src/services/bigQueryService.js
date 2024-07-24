@@ -64,7 +64,7 @@ async function loadToBigQuery(form, data, attemptsMax, io = console) {
                 labels: {
                     origin: form.origin,
                     ingestion_tool: package.name,
-                    schedule: form.isSchedule ? form.scheduleCron : 'manual',
+                    schedule: form.isSchedule ? "automatico" : 'manual',
                 },
             });
             io.log(`[BigQuery] Tabela ${tableId} criada com sucesso.`);

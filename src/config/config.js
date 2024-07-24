@@ -21,6 +21,7 @@ const sqlConfig = {
             encrypt: true,
             enableArithAbort: true,
             trustServerCertificate: true,
+            requestTimeout: 5 * 60 * 1000
         }
     },
     salesforce: {
