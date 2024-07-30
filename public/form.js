@@ -14,7 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
             isDelete: document.getElementById('isDelete').checked,
             isCreate: document.getElementById('isCreate').checked,
             origin: document.getElementById('origin').value,
-            isManualSchema: document.getElementById('isManualSchema').checked,
+            isManualSchema: document.getElementById('isCreateOnlySchema').checked,
+            isCreateOnlySchema: document.getElementById('isManualSchema').checked,
             isSchedule: document.getElementById('isSchedule').checked,
             scheduleCron: document.getElementById('scheduleCron').value,
         };
@@ -31,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('isDelete').checked = formData.isDelete || false;
             document.getElementById('isCreate').checked = formData.isCreate || false;
             document.getElementById('origin').value = formData.origin || 'ssot';
+            document.getElementById('isCreateOnlySchema').checked = formData.isCreateOnlySchema || false;
             document.getElementById('isManualSchema').checked = formData.isManualSchema || false;
             document.getElementById('isSchedule').checked = formData.isSchedule || false;
             document.getElementById('scheduleCron').value = formData.scheduleCron || '';
@@ -54,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isCreate = document.getElementById('isCreate').checked;
         const origin = document.getElementById('origin').value;
         const isManualSchema = document.getElementById('isManualSchema').checked;
+        const isCreateOnlySchema = document.getElementById('isCreateOnlySchema').checked;
         const isSchedule = document.getElementById('isSchedule').checked;
         const scheduleCron = document.getElementById('scheduleCron').value;
 
@@ -72,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     isCreate,
                     origin,
                     isManualSchema,
+                    isCreateOnlySchema,
                     schema: false,
                     isSchedule,
                     scheduleCron

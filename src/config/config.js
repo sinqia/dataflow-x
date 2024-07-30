@@ -45,6 +45,18 @@ const sqlConfig = {
             enableArithAbort: true,
             trustServerCertificate: true,
         }
+    },
+    jira:{
+        user: process.env.JIRA_USERNAME,
+        password: process.env.JIRA_PASSWORD,
+        server: process.env.JIRA_SERVER,
+        database: process.env.JIRA_DATABASE,
+        options: {
+            encrypt: true,
+            enableArithAbort: true,
+            trustServerCertificate: true,
+            requestTimeout: 5 * 60 * 1000 // 5 minutes
+        } 
     }
 };
 

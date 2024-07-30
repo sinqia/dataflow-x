@@ -6,6 +6,7 @@ const package = require('../../package.json');
 
 async function processData(req, res) {
     var form = req.body;
+    var data = [];
 
     // set name
     form.name = `${form.origin}_${form.tableId}`;
@@ -17,7 +18,10 @@ async function processData(req, res) {
     try {
         await connectToSql(form.origin, io);
 
-        const data = await fetchData(form.origin, form.schemaDb, form.tableId, io);
+        if(!form.isCreateOnlySchema){
+            data = await fetchData(form.origin, form.schemaDb, form.tableId, io);
+        }
+
 
         if (!form.schema) {
             var dataSchema = await inferSchemaFromDb(form.origin, form.schemaDb, form.tableId);
@@ -62,6 +66,7 @@ async function processData(req, res) {
                     isDelete: form.isDelete,
                     isCreate: form.isCreate,
                     origin: form.origin,
+                    isCreateOnlySchema: form.isCreateOnlySchema,
 
                     // Schema só é enviado se tiver sido modificado
                     schema: form.isManualSchema ? form.schema : false,
