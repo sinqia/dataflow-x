@@ -15,6 +15,7 @@ function mapSqlTypeToBigQueryType(sqlType) {
         case 'smallmoney':
             return 'FLOAT64';
         case 'date':
+            return 'DATE';
         case 'datetime':
         case 'datetime2':
         case 'smalldatetime':

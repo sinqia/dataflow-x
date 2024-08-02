@@ -238,7 +238,7 @@ async function cleanTemp(folderPath) {
     try {
         // Verifica se o caminha existe e se não, cria
         if (!fs.existsSync(dir)) {
-            throw new Error('Pasta não encontrada');
+            console.log('Pasta não encontrada:', folderPath);
         }
 
         // Apaga a pasta
