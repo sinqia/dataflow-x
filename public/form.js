@@ -9,13 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveToLocalStorage = () => {
         const formData = {
             tableId: document.getElementById('tableId').value,
+            tableBq: document.getElementById('tableBq').value,
             schemaDb: document.getElementById('schemaDb').value,
             schemaBq: document.getElementById('schemaBq').value,
             isDelete: document.getElementById('isDelete').checked,
             isCreate: document.getElementById('isCreate').checked,
             origin: document.getElementById('origin').value,
-            isManualSchema: document.getElementById('isCreateOnlySchema').checked,
-            isCreateOnlySchema: document.getElementById('isManualSchema').checked,
+            isManualSchema: document.getElementById('isManualSchema').checked,
+            isCreateOnlySchema: document.getElementById('isCreateOnlySchema').checked,
             isSchedule: document.getElementById('isSchedule').checked,
             scheduleCron: document.getElementById('scheduleCron').value,
         };
@@ -27,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (savedData) {
             const formData = JSON.parse(savedData);
             document.getElementById('tableId').value = formData.tableId || '';
+            document.getElementById('tableBq').value = formData.tableBq || '';
             document.getElementById('schemaDb').value = formData.schemaDb || '';
             document.getElementById('schemaBq').value = formData.schemaBq || '';
             document.getElementById('isDelete').checked = formData.isDelete || false;
@@ -46,10 +48,15 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('input', saveToLocalStorage);
     form.addEventListener('change', saveToLocalStorage);
 
+    // Evento nos campos tableId e origin para atualizar o tableBq
+    document.getElementById('tableId').addEventListener('input', setTableBq);
+    document.getElementById('origin').addEventListener('change', setTableBq);
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const tableId = document.getElementById('tableId').value;
+        const tableBq = document.getElementById('tableBq').value;
         const schemaDb = document.getElementById('schemaDb').value;
         const schemaBq = document.getElementById('schemaBq').value;
         const isDelete = document.getElementById('isDelete').checked;
@@ -69,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify(
                 {
                     tableId,
+                    tableBq,
                     schemaDb,
                     schemaBq,
                     isDelete,
@@ -325,4 +333,12 @@ function addButtons(element) {
     });
 
     element.appendChild(button);
+}
+
+async function setTableBq () {
+    const tableId = document.getElementById('tableId').value;
+    const origin = document.getElementById('origin').value;
+    console.log('tableId', tableId);
+
+    document.getElementById('tableBq').value = `${origin}_${tableId}`;
 }

@@ -7,28 +7,31 @@ const package = require('../../package.json');
 async function processData(req, res) {
     var form = req.body;
     var data = [];
-
-    // set name
-    form.name = `${form.origin}_${form.tableId}`;
-    if (form.schemaDb !== 'dbo') form.name = `${form.origin}_${form.schemaDb}_${form.tableId}`;
-
+    // Inicializa o socket.io
     const io = req.app.get('socketio');
     io.log = function (...args) { io.emit('status', args.join(' ')); console.log(...args) }
 
+    // Define o nome da tabela no BigQuery
+    form.name = form.tableBq || `${form.origin}_${form.tableId}`;
+    if (form.schemaDb !== 'dbo') form.name = `${form.origin}_${form.schemaDb}_${form.tableId}`;
+
     try {
+        // Conecta ao banco de dados
         await connectToSql(form.origin, io);
 
+        // Se não for apenas para criar o schema, busca os dados
         if(!form.isCreateOnlySchema){
             data = await fetchData(form.origin, form.schemaDb, form.tableId, io);
         }
 
-
+        // Se o schema não foi definido, inferir o schema
         if (!form.schema) {
             var dataSchema = await inferSchemaFromDb(form.origin, form.schemaDb, form.tableId);
             form.schema = dataSchema.inferred;
             io.log(`[Database] Esquema inferido: ${form.schema.length} colunas`);
         }
 
+        // Se o schema for manual, redireciona para a rota de schema manual
         if (form.isManualSchema) {
             io.log('[Database] Usando esquema manual');
 
@@ -41,6 +44,7 @@ async function processData(req, res) {
             });
         }
 
+        // Garante que o dataset no BigQuery exista
         await ensureDatasetExists(form.schemaBq);
         io.log('[Database] Dataset BigQuery garantido');
 
@@ -53,6 +57,7 @@ async function processData(req, res) {
             loadToBigQuery(form, data, 20, io);
         }
 
+        // Se for agendamento, cria job no Cloud Scheduler
         if (form.isSchedule) {
             io.log('[Scheduler] Criando job no Cloud Scheduler');
             const jobData = {
@@ -65,6 +70,7 @@ async function processData(req, res) {
                     schemaBq: form.schemaBq,
                     isDelete: form.isDelete,
                     isCreate: form.isCreate,
+                    tableBq: form.tableBq,
                     origin: form.origin,
                     isCreateOnlySchema: form.isCreateOnlySchema,
 
