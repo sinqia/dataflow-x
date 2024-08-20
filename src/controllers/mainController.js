@@ -2,11 +2,13 @@ const { connectToSql, fetchData, closeConnection } = require('../models/sqlModel
 const { inferSchemaFromDb } = require('../services/schemaService');
 const { ensureDatasetExists, loadToBigQuery } = require('../services/bigQueryService');
 const { cloudSchedulerJobCreate, cloudSchedulerJobDelete } = require('../services/cloudScheduler');
+const { dataflowPipelineData, dataflowPipelineCreate } = require('../services/dataflowService');
 const package = require('../../package.json');
 
 async function processData(req, res) {
     var form = req.body;
     var data = [];
+    var arrLinks = [];
     // Inicializa o socket.io
     const io = req.app.get('socketio');
     io.log = function (...args) { io.emit('status', args.join(' ')); console.log(...args) }
@@ -92,13 +94,28 @@ async function processData(req, res) {
             io.log('[Scheduler] Job criado');
         }
 
-        form.link = `https://console.cloud.google.com/bigquery?ws=!1m5!1m4!4m3!1sssot-391717!2sraw!3s${form.name}&project=ssot-391717`;
+        if (form.isDataflow){
+            io.log('[Dataflow] Criando pipeline no Dataflow');
+            const pipelineData = dataflowPipelineData(form, io);
+            await dataflowPipelineCreate(pipelineData, io);
 
-        io.log(`link: ${form.link}`);
+            arrLinks.push({
+                name: 'Dataflow',
+                link: `https://console.cloud.google.com/dataflow/pipelines/${process.env.GCP_LOCATION_ID}/${pipelineData.displayName}/info?project=${process.env.GCP_PROJECT_ID}`
+            });
+        }
+
+        arrLinks.push({
+            name: 'BigQuery',
+            link: `https://console.cloud.google.com/bigquery?project=${process.env.GCP_PROJECT_ID}&p=${process.env.GCP_PROJECT_ID}&d=${form.schemaBq}&t=${form.name}&page=table`
+        });
+
+
+        // io.log(`link: ${form.link}`);
 
         return res.json({
             message: 'Dados processados e carregados no BigQuery com sucesso.',
-            form,
+            arrLinks: arrLinks,
             status: true
         });
     } catch (err) {

@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
             isCreateOnlySchema: document.getElementById('isCreateOnlySchema').checked,
             isSchedule: document.getElementById('isSchedule').checked,
             scheduleCron: document.getElementById('scheduleCron').value,
+            isDataflow: document.getElementById('isDataflow').value,
         };
         localStorage.setItem('formData', JSON.stringify(formData));
     };
@@ -37,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('isCreateOnlySchema').checked = formData.isCreateOnlySchema || false;
             document.getElementById('isManualSchema').checked = formData.isManualSchema || false;
             document.getElementById('isSchedule').checked = formData.isSchedule || false;
+            document.getElementById('isDataflow').checked = formData.isDataflow || false;
             document.getElementById('scheduleCron').value = formData.scheduleCron || '';
 
             scheduleSwitch();
@@ -66,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isCreateOnlySchema = document.getElementById('isCreateOnlySchema').checked;
         const isSchedule = document.getElementById('isSchedule').checked;
         const scheduleCron = document.getElementById('scheduleCron').value;
+        const isDataflow = document.getElementById('isDataflow').checked;
 
 
         const response = await fetch('/api/process-data', {
@@ -86,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     isCreateOnlySchema,
                     schema: false,
                     isSchedule,
+                    isDataflow,
                     scheduleCron
                 }),
         });
@@ -111,20 +115,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 var br = document.createElement('br');
                 div.appendChild(br);
 
-                // create link element
-                var link = document.createElement('a');
-                link.href = data.form.link;
-                link.textContent = data.form.name;
+                var divLinks = document.createElement('div');
+                divLinks.id = 'links';
+                div.appendChild(divLinks);
+
+                var arrLinks = data.arrLinks;
+                arrLinks.forEach(linkObj => {
+                    var link = document.createElement('a');
+                    link.href = linkObj.link;
+                    link.textContent = linkObj.name;
+                    link.target = '_blank';
+                    divLinks.appendChild(link);
+                });
+
+                resultDiv.prepend(div);
 
 
                 // append link to the div
-                div.appendChild(link);
                 addButtons(resultDiv);
                 resultDiv.prepend(div);
 
 
             }
         } catch (error) {
+            console.log('error', error);
             showForm('result', 'Erro');
             var resultDiv = document.getElementById('result');
             var div = document.createElement('div');
@@ -139,6 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add event listener for the schedule switch
     document.getElementById('isSchedule').addEventListener('change', scheduleSwitch);
+    document.getElementById('isDataflow').addEventListener('change', scheduleSwitch);
 
     // Socket events
     socket.on('status', (message) => {
@@ -312,12 +327,12 @@ function mapSqlTypeToBigQueryType(sqlType) {
 }
 
 function scheduleSwitch() {
-    var checkBox = document.getElementById("isSchedule");
+    var checkBoxIsSchedule = document.getElementById("isSchedule");
+    var checkBoxIsDataflow = document.getElementById("isDataflow");
 
-    if (checkBox.checked == true) {
+    if (checkBoxIsSchedule.checked || checkBoxIsDataflow.checked) {
         document.getElementById("schedule").style.display = "block";
-    }
-    else {
+    } else {
         document.getElementById("schedule").style.display = "none";
     }
 }

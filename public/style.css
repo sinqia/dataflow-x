@@ -168,3 +168,8 @@ th, td {
 th {
   background-color: #f4f4f4;
 }
+
+#links{
+  display: flex;
+  flex-direction: column;
+}
