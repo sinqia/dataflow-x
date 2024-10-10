@@ -204,9 +204,11 @@ function schemaBqToParquet(schema) {
         "INTEGER": "INT64",
         "FLOAT": "DOUBLE",
         "BOOLEAN": "BOOLEAN",
+        "DATE": "TIMESTAMP_MILLIS",
         "TIMESTAMP": "TIMESTAMP_MILLIS",
         "FLOAT64": "DOUBLE",
         "INT64": "INT64",
+        "DATE": "DATE",
         // Adicione outros mapeamentos conforme necessário
     };
 

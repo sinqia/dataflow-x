@@ -2,7 +2,7 @@ const { connectToSql, fetchData, closeConnection } = require('../models/sqlModel
 const { inferSchemaFromDb } = require('../services/schemaService');
 const { ensureDatasetExists, loadToBigQuery } = require('../services/bigQueryService');
 const { cloudSchedulerJobCreate, cloudSchedulerJobDelete } = require('../services/cloudScheduler');
-const { dataflowPipelineData, dataflowPipelineCreate } = require('../services/dataflowService');
+const { dataflowPipelineData, dataflowPipelineCreate, dataflowPipelineDelete } = require('../services/dataflowService');
 const package = require('../../package.json');
 
 async function processData(req, res) {
@@ -15,7 +15,7 @@ async function processData(req, res) {
 
     // Define o nome da tabela no BigQuery
     form.name = form.tableBq || `${form.origin}_${form.tableId}`;
-    if (form.schemaDb !== 'dbo') form.name = `${form.origin}_${form.schemaDb}_${form.tableId}`;
+    if (form.schemaDb !== 'dbo' && form.schemaDb !== 'public') form.name = `${form.origin}_${form.schemaDb}_${form.tableId}`;
 
     try {
         // Conecta ao banco de dados
@@ -97,6 +97,7 @@ async function processData(req, res) {
         if (form.isDataflow){
             io.log('[Dataflow] Criando pipeline no Dataflow');
             const pipelineData = dataflowPipelineData(form, io);
+            await dataflowPipelineDelete(pipelineData, io);
             await dataflowPipelineCreate(pipelineData, io);
 
             arrLinks.push({

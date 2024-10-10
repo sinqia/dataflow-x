@@ -31,13 +31,95 @@ async function dataflowPipelineCreate(pipeData, io = console) {
 
     try {
         // Faz a requisição POST para a API
-        const response = await axios.post(url,data, { headers });
+        const response = await axios.post(url, data, { headers });
         io.log(`[Pipeline] Success: Job ${pipeData.displayName} created`);
-        return response.data;
+        return {
+            status: true,
+            message: 'Pipeline created',
+            data: response.data
+        };
     } catch (error) {
+        if (error.response.statusText === 'Conflict') {
+            io.log('Pipeline already exists');
+            return {
+                status: false,
+                message: 'Pipeline already exists'
+            }
+        }
+
         io.log(`[Pipeline] Error: ${error.response.status}`);
         io.log(error.response.status, error.response.data);
         throw error;
+    }
+}
+
+async function dataflowPipelinePath(pipeData, io = console) {
+
+    io.log(`[Pipeline] Creating pipe ${pipeData.displayName}`);
+    const projectId = process.env.GCP_PROJECT_ID;
+    const locationId = process.env.GCP_LOCATION_ID;
+    // PATCH https://datapipelines.googleapis.com/v1/{pipeline.name=projects/*/locations/*/pipelines/*}
+    const url = `https://datapipelines.googleapis.com/v1/${pipeData.name}`
+
+    // Cria uma instância do GoogleAuth
+    const auth = new GoogleAuth({
+        scopes: 'https://www.googleapis.com/auth/cloud-platform',
+    });
+
+    // Obtém um client authenticated
+    const client = await auth.getClient();
+
+    // Obtém o token de acesso
+    const token = await client.getAccessToken();
+
+    // Configura os headers da requisição
+    const headers = {
+        Authorization: `Bearer ${token.token}`,
+        'Content-Type': 'application/json',
+    };
+
+    let data = JSON.stringify(pipeData);
+
+    try {
+        // Faz a requisição POST para a API
+        const response = await axios.patch(url, data, { headers });
+        io.log(`[Pipeline] Success: Job ${pipeData.displayName} created`);
+        return response.data;
+    } catch (error) {
+        io.log(`[Pipeline] Error: ${error?.response?.status}`);
+        io.log(error?.response?.status, error?.response?.data);
+        throw error;
+    }
+}
+
+async function dataflowPipelineDelete(pipeData, io = console) {
+    io.log(`[Pipeline] Delete pipe ${pipeData.displayName}`);
+    const url = `https://datapipelines.googleapis.com/v1/${pipeData.name}`
+
+    // Cria uma instância do GoogleAuth
+    const auth = new GoogleAuth({
+        scopes: 'https://www.googleapis.com/auth/cloud-platform',
+    });
+
+    // Obtém um client authenticated
+    const client = await auth.getClient();
+
+    // Obtém o token de acesso
+    const token = await client.getAccessToken();
+
+    // Configura os headers da requisição
+    const headers = {
+        Authorization: `Bearer ${token.token}`,
+        'Content-Type': 'application/json',
+    };
+
+    try {
+        // Faz a requisição POST para a API
+        const response = await axios.delete(url,{ headers });
+        io.log(`[Pipeline] Success: Job ${pipeData.displayName} deleted`);
+        return response.data;
+    } catch (error) {
+        io.log(`[Pipeline] Error: ${error?.response?.status}`);
     }
 }
 
@@ -49,6 +131,15 @@ function dataflowPipelineData(form, io = console) {
     jobName = jobName.replace(/_/g, '-');
     jobName = jobName.toLowerCase();
 
+    var containerSpecGcsPath = 'gs://dataflow-templates-southamerica-east1/latest/flex/SQLServer_to_BigQuery';
+    var connectionURL = `jdbc:sqlserver://;serverName=${connectionData.server};`;
+    
+    if(connectionData.sgbd === 'postgres'){
+        containerSpecGcsPath = 'gs://dataflow-templates-southamerica-east1/latest/flex/PostgreSQL_to_BigQuery';
+        connectionURL = `jdbc:postgresql://${connectionData.host}:5432/${connectionData.database}`;
+    }
+
+
     const pipeline = {
         name: `projects/${projectId}/locations/${locationId}/pipelines/${jobName}`,
         "displayName": jobName,
@@ -59,7 +150,7 @@ function dataflowPipelineData(form, io = console) {
                 "location": locationId,
                 "launchParameter": {
                     "jobName": jobName,
-                    "containerSpecGcsPath": "gs://dataflow-templates-southamerica-east1/latest/flex/SQLServer_to_BigQuery",
+                    "containerSpecGcsPath": containerSpecGcsPath,
                     "environment": {
                         "numWorkers": 2,
                         "tempLocation": "gs://dataflow-staging-southamerica-east1-172515849792/tmp",
@@ -67,7 +158,7 @@ function dataflowPipelineData(form, io = console) {
                         "network": "https://www.googleapis.com/compute/v1/projects/prj-sinqia-network/global/networks/vpc-sinqia-hml"
                     },
                     "parameters": {
-                        "connectionURL": `jdbc:sqlserver://;serverName=${connectionData.server};`,
+                        "connectionURL": connectionURL,
                         "connectionProperties": "encrypt=false",
                         "username": connectionData.user,
                         "password": connectionData.password,
@@ -98,5 +189,7 @@ function dataflowPipelineData(form, io = console) {
 
 module.exports = {
     dataflowPipelineCreate: dataflowPipelineCreate,
-    dataflowPipelineData: dataflowPipelineData
+    dataflowPipelineData: dataflowPipelineData,
+    dataflowPipelinePath: dataflowPipelinePath,
+    dataflowPipelineDelete: dataflowPipelineDelete
 };

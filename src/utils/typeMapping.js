@@ -4,8 +4,10 @@ function mapSqlTypeToBigQueryType(sqlType) {
         case 'int':
         case 'smallint':
         case 'tinyint':
+        case 'integer':
             return 'INT64';
         case 'bit':
+        case 'boolean':
             return 'BOOLEAN';
         case 'decimal':
         case 'numeric':
@@ -13,6 +15,7 @@ function mapSqlTypeToBigQueryType(sqlType) {
         case 'real':
         case 'money':
         case 'smallmoney':
+        case 'double precision':
             return 'FLOAT64';
         case 'date':
             return 'DATE';
@@ -22,7 +25,9 @@ function mapSqlTypeToBigQueryType(sqlType) {
         case 'time':
         case 'timestamp':
         case 'datetimeoffset':
+        case 'timestamp with time zone':
             return 'TIMESTAMP';
+        case 'character varying':
         case 'char':
         case 'varchar':
         case 'text':
