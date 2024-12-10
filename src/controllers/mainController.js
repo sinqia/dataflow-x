@@ -1,4 +1,4 @@
-const { connectToSql, fetchData, closeConnection } = require('../models/sqlModel');
+const { connectToSql, fetchData, closeConnection, isQuery, extractTableFromQuery, extractFieldsFromQuery } = require('../models/sqlModel');
 const { inferSchemaFromDb } = require('../services/schemaService');
 const { ensureDatasetExists, loadToBigQuery } = require('../services/bigQueryService');
 const { cloudSchedulerJobCreate, cloudSchedulerJobDelete } = require('../services/cloudScheduler');
@@ -13,6 +13,16 @@ async function processData(req, res) {
     const io = req.app.get('socketio');
     io.log = function (...args) { io.emit('status', args.join(' ')); console.log(...args) }
 
+
+    form.isQuery = isQuery(form.tableId);
+
+    // Verifica se foi passado uma tabela ou query
+    if (form.isQuery) {
+        form.query = form.tableId;
+        form.tableId = extractTableFromQuery(form.tableId);
+        form.fields = extractFieldsFromQuery(form.query);
+    }
+
     // Define o nome da tabela no BigQuery
     form.name = form.tableBq || `${form.origin}_${form.tableId}`;
     if (form.schemaDb !== 'dbo' && form.schemaDb !== 'public') form.name = `${form.origin}_${form.schemaDb}_${form.tableId}`;
@@ -23,12 +33,12 @@ async function processData(req, res) {
 
         // Se não for apenas para criar o schema, busca os dados
         if(!form.isCreateOnlySchema){
-            data = await fetchData(form.origin, form.schemaDb, form.tableId, io);
+            data = await fetchData(form, io);
         }
 
         // Se o schema não foi definido, inferir o schema
         if (!form.schema) {
-            var dataSchema = await inferSchemaFromDb(form.origin, form.schemaDb, form.tableId);
+            var dataSchema = await inferSchemaFromDb(form);
             form.schema = dataSchema.inferred;
             io.log(`[Database] Esquema inferido: ${form.schema.length} colunas`);
         }

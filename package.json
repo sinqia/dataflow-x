@@ -21,6 +21,7 @@
     "fs": "^0.0.1-security",
     "google-auth-library": "^9.11.0",
     "mssql": "^11.0.1",
+    "mysql2": "^3.11.5",
     "parquets": "^0.10.10",
     "path": "^0.12.7",
     "pg": "^8.13.0",

@@ -139,6 +139,11 @@ function dataflowPipelineData(form, io = console) {
         connectionURL = `jdbc:postgresql://${connectionData.host}:5432/${connectionData.database}`;
     }
 
+    var query = `SELECT * FROM ${connectionData.database}.${form.schemaDb}.${form.tableId}`;
+
+    if(form.query){
+        query = form.query;
+    }
 
     const pipeline = {
         name: `projects/${projectId}/locations/${locationId}/pipelines/${jobName}`,
@@ -162,7 +167,7 @@ function dataflowPipelineData(form, io = console) {
                         "connectionProperties": "encrypt=false",
                         "username": connectionData.user,
                         "password": connectionData.password,
-                        "query": `SELECT * FROM ${connectionData.database}.${form.schemaDb}.${form.tableId}`,
+                        "query": query,
                         "outputTable": `${projectId}:${form.schemaBq}.${form.tableBq}`,
                         "bigQueryLoadingTemporaryDirectory": "gs://bckt-dataflow-temp",
                         "useColumnAlias": "false",

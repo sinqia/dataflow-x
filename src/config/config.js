@@ -73,6 +73,17 @@ const sqlConfig = {
         max: 10,               // Número máximo de clientes na pool
         idleTimeoutMillis: 30000,
         ssl: { rejectUnauthorized: false }
+    },
+    portal: {
+        user: process.env.PORTAL_USERNAME,
+        password: process.env.PORTAL_PASSWORD,
+        host: process.env.PORTAL_SERVER,
+        database: process.env.PORTAL_DATABASE,
+        port: process.env.PORTAL_PORT,
+        sgbd: 'mysql',
+        max: 10,               // Número máximo de clientes na pool
+        idleTimeoutMillis: 30000,
+        // ssl: { rejectUnauthorized: false }
     }
 };
 

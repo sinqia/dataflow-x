@@ -22,6 +22,7 @@
                     <option value="jira">jira</option>
                     <option value="salesforce" disabled>salesforce</option>
                     <option value="defectdojo">defectdojo</option>
+                    <option value="portal">portal</option>
                 </select>
             </label>
             <label>
@@ -29,7 +30,7 @@
                 <input type="text" id="schemaDb" required>
             </label>
             <label>
-                Nome da tabela:
+                Nome da tabela ou query:
                 <input type="text" id="tableId" required>
             </label>
             <label>
@@ -52,14 +53,14 @@
                 Criar a tabela no BQ:
                 <input type="checkbox" id="isCreate">
             </label>
-            <label>
+            <!-- <label>
                 Configuração manual do schema:
                 <input type="checkbox" id="isManualSchema">
-            </label>
-            <label>
+            </label> -->
+            <!-- <label>
                 Agendar execução Cloud Scheduler:
                 <input type="checkbox" id="isSchedule">
-            </label>
+            </label> -->
             <label>
                 Agendar execução Dataflow:
                 <input type="checkbox" id="isDataflow">
