@@ -60,7 +60,6 @@ async function fetchTableSchema(form) {
                 information_schema.columns 
             WHERE 
                 table_name = '${form.tableId}' 
-                AND table_schema = '${form.schemaDb}'
         `;
     }
 
@@ -97,7 +96,7 @@ async function fetchData(form, io = console) {
         query = `SELECT * FROM ${form.tableId}`;
     }
 
-    if(form.query){
+    if (form.query) {
         query = form.query;
     }
 
@@ -127,7 +126,7 @@ async function fetchData(form, io = console) {
 }
 
 async function closeConnection(origin) {
-    if(!origin){
+    if (!origin) {
         return null;
     }
     if (sqlConfig[origin].sgbd === 'mssql') {
@@ -138,7 +137,7 @@ async function closeConnection(origin) {
 }
 
 function isQuery(tableId) {
-    if(!tableId){
+    if (!tableId) {
         throw new Error('TableId is required');
     }
 
@@ -153,26 +152,52 @@ function isQuery(tableId) {
 
 function extractTableFromQuery(query) {
     const table = query.match(/FROM\s+([^\s]+)/i)[1];
-    return table;
+    // verifica se tem schema e mantem apenas o nome da tabela
+    return table.includes('.') ? table.split('.')[1] : table;
 }
 
 function extractFieldsFromQuery(query) {
-    var fields = query.match(/SELECT\s+(.+)\s+FROM/i)[1];
-    
-    // verifica se tem * e retorna false
-    if(fields.includes('*')){
+    // Extrai o conteúdo do SELECT até o FROM
+    var match = query.match(/SELECT\s+(.+?)\s+FROM/i);
+    if (!match) return false;
+
+    var fields = match[1];
+
+    // Verifica se a query usa o asterisco (*)
+    if (fields.includes('*')) {
         return false;
     }
 
-    // Remove top
+    // Remove TOP, se existir
     fields = fields.replace(/TOP\s+\d+\s+/i, '');
-    // remove espaços em branco
-    fields = fields.replace(/\s/g, '');
-    // separa os campos
-    fields = fields.split(',');
 
-    return fields;
+    // Divide os campos por vírgula
+    var fieldList = fields.split(',');
+
+    // Processa cada campo
+    return fieldList.map(field => {
+        // Remove espaços extras
+        field = field.trim();
+
+        // Divide pelo AS ou espaço (para identificar alias)
+        var matchAlias = field.match(/(.+?)\s+(?:AS\s+)?(\w+)$/i);
+
+        if (matchAlias) {
+            // Retorna objeto com o nome original e alias
+            return {
+                original: matchAlias[1].trim(),
+                alias: matchAlias[2].trim()
+            };
+        }
+
+        // Se não houver alias, retorna apenas o nome original
+        return {
+            original: field,
+            alias: field
+        };
+    });
 }
+
 
 module.exports = {
     connectToSql,

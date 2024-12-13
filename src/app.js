@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const routes = require('./routes/index');
 const initializeSocket = require('./socket');
 const package = require('../package.json');
+const { version } = require('os');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -26,7 +27,9 @@ const io = initializeSocket(server);
 app.set('socketio', io);
 
 app.get('/', (req, res) => {
-    res.render('form');
+    res.render('form', {
+        version: package.version,
+    })
 });
 app.get('/jobs', (req, res) => {
     res.render('jobs');

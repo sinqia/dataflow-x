@@ -32,7 +32,7 @@ async function processData(req, res) {
         await connectToSql(form.origin, io);
 
         // Se não for apenas para criar o schema, busca os dados
-        if(!form.isCreateOnlySchema){
+        if (!form.isCreateOnlySchema) {
             data = await fetchData(form, io);
         }
 
@@ -61,7 +61,7 @@ async function processData(req, res) {
         io.log('[Database] Dataset BigQuery garantido');
 
         // Parametro para o processamento do bigQuery ser async
-        if(!form?.isAsync) {
+        if (!form?.isAsync) {
 
             await loadToBigQuery(form, data, 20, io);
             io.log('[BigQuery] Dados carregados');
@@ -104,7 +104,7 @@ async function processData(req, res) {
             io.log('[Scheduler] Job criado');
         }
 
-        if (form.isDataflow){
+        if (form.isDataflow) {
             io.log('[Dataflow] Criando pipeline no Dataflow');
             const pipelineData = dataflowPipelineData(form, io);
             await dataflowPipelineDelete(pipelineData, io);
@@ -121,16 +121,13 @@ async function processData(req, res) {
             link: `https://console.cloud.google.com/bigquery?project=${process.env.GCP_PROJECT_ID}&p=${process.env.GCP_PROJECT_ID}&d=${form.schemaBq}&t=${form.name}&page=table`
         });
 
-
-        // io.log(`link: ${form.link}`);
-
         return res.json({
             message: 'Dados processados e carregados no BigQuery com sucesso.',
             arrLinks: arrLinks,
             status: true
         });
     } catch (err) {
-        console.error(err); 
+        console.error(err);
         closeConnection();
         return res.status(500).json({ error: err.message, status: false });
     }
