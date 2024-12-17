@@ -140,15 +140,20 @@ async function insertBiqueryParquet(tableId, datasetId, arrData, schema, io = co
 
     // Carrega os arquivos parquet no BigQuery
     io.log(`[LoadBigQuery] Carregando arquivos no BigQuery...`);
-    for (let i = 0; i < groups.length; i++) {
-        const fileName = `${tableId}_${i}.parquet`;
-        const progress = ((i + 1) / groups.length) * 100;
-        io.log(`[BigQuery] Load ${tableId} (${i + 1}/${groups.length}) - ${progress.toFixed(2)}% concluído`);
-        let resJob = await insertDataIntoBigQueryParquet(datasetId, tableId, folderParquet, fileName);
-        arrJobs.push(resJob);
+    const batchSize = 1;
+    for (let i = 0; i < groups.length; i += batchSize) {
+        const batch = groups.slice(i, i + batchSize);
+        const promises = batch.map(async (group, index) => {
+            const fileName = `${tableId}_${i + index}.parquet`;
+            const progress = ((i + index + 1) / groups.length) * 100;
+            io.log(`[BigQuery] Load ${tableId} (${i + index + 1}/${groups.length}) - ${progress.toFixed(2)}% concluído`);
+            return await insertDataIntoBigQueryParquet(datasetId, tableId, folderParquet, fileName);
+        });
+
+        const resJobs = await Promise.all(promises);
+        arrJobs.push(...resJobs);
     }
 
-    // io.log(`[LoadBigQuery] Arquivos carregados no BigQuery`);
 
     // apaga os arquivos
     await cleanTemp(folderParquet);

@@ -19,8 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
             isCreateOnlySchema: document.getElementById('isCreateOnlySchema').checked,
             // isSchedule: document.getElementById('isSchedule').checked,
             scheduleCron: document.getElementById('scheduleCron').value,
-            isDataflow: document.getElementById('isDataflow').value,
+            isDataflow: document.getElementById('isDataflow').checked,
         };
+        console.log('formData', formData);
         localStorage.setItem('formData', JSON.stringify(formData));
     };
 

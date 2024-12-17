@@ -83,15 +83,17 @@ async function fetchTableSchema(form) {
 }
 
 async function fetchData(form, io = console) {
+    const sgbd = sqlConfig[form.origin].sgbd;
+
     let query;
-    if (sqlConfig[form.origin].sgbd === 'mssql') {
+    if (sgbd === 'mssql') {
         connection = await sql.connect(sqlConfig[form.origin]);
         query = `SELECT * FROM ${form.schemaDb}.${form.tableId}`;
-    } else if (sqlConfig[form.origin].sgbd === 'postgres') {
+    } else if (sgbd === 'postgres') {
         const pool = sqlConfig[form.origin].pool;
         query = `SELECT * FROM ${form.schemaDb}.${form.tableId} limit 10`;
         connection = pool;
-    } else if (sqlConfig[form.origin].sgbd === 'mysql') {
+    } else if (sgbd === 'mysql') {
         connection = sqlConfig[form.origin].connection;
         query = `SELECT * FROM ${form.tableId}`;
     }
@@ -105,13 +107,18 @@ async function fetchData(form, io = console) {
     try {
         const result = await connection.query(query);
         let rows = [];
-        switch (sqlConfig[form.origin].sgbd) {
+        switch (sgbd) {
             case 'mssql':
                 rows = result.recordset;
+                break;
             case 'postgres':
                 rows = result.rows;
+                break;
             case 'mysql':
                 rows = result[0];
+                break;
+            default:
+                throw new Error('SGBD não suportado');
         }
 
         // const rows = sqlConfig[form.origin].sgbd === 'mssql' ? result.recordset : result.rows;

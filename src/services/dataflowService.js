@@ -130,6 +130,7 @@ function dataflowPipelineData(form, io = console) {
     var jobName = `${package.name}-${form.name}`;
     jobName = jobName.replace(/_/g, '-');
     jobName = jobName.toLowerCase();
+    jobName = jobName.substring(0, 60); // mais que isso da erro
 
     var containerSpecGcsPath = 'gs://dataflow-templates-southamerica-east1/latest/flex/SQLServer_to_BigQuery';
     var connectionURL = `jdbc:sqlserver://;serverName=${connectionData.server};`;
@@ -141,6 +142,7 @@ function dataflowPipelineData(form, io = console) {
 
     var query = `SELECT * FROM ${connectionData.database}.${form.schemaDb}.${form.tableId}`;
 
+    // Se tiver query, usa a query
     if(form.query){
         query = form.query;
     }
