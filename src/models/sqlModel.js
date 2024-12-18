@@ -83,26 +83,37 @@ async function fetchTableSchema(form) {
 }
 
 async function fetchData(form, io = console) {
+    const query = form.query || buildQuery(form);
+    return await executeQuery(form.origin, query, io);
+}
+
+function buildQuery(form) {
     const sgbd = sqlConfig[form.origin].sgbd;
-
-    let query;
     if (sgbd === 'mssql') {
-        connection = await sql.connect(sqlConfig[form.origin]);
-        query = `SELECT * FROM ${form.schemaDb}.${form.tableId}`;
+        return `SELECT * FROM ${form.schemaDb}.${form.tableId}`;
     } else if (sgbd === 'postgres') {
-        const pool = sqlConfig[form.origin].pool;
-        query = `SELECT * FROM ${form.schemaDb}.${form.tableId} limit 10`;
-        connection = pool;
+        return `SELECT * FROM ${form.schemaDb}.${form.tableId} limit 10`;
     } else if (sgbd === 'mysql') {
-        connection = sqlConfig[form.origin].connection;
-        query = `SELECT * FROM ${form.tableId}`;
+        return `SELECT * FROM ${form.tableId}`;
+    }
+    throw new Error('SGBD não suportado');
+}
+
+async function executeQuery(origin, query, io = console) {
+    const sgbd = sqlConfig[origin].sgbd;
+    let connection;
+
+    if (sgbd === 'mssql') {
+        connection = await sql.connect(sqlConfig[origin]);
+    } else if (sgbd === 'postgres') {
+        connection = sqlConfig[origin].pool;
+    } else if (sgbd === 'mysql') {
+        connection = sqlConfig[origin].connection;
+    } else {
+        throw new Error('SGBD não suportado');
     }
 
-    if (form.query) {
-        query = form.query;
-    }
-
-    io.log(`[Database] Buscando dados da tabela ${form.tableId}`);
+    io.log(`[Database] Executando query: ${query}`);
 
     try {
         const result = await connection.query(query);
@@ -121,14 +132,13 @@ async function fetchData(form, io = console) {
                 throw new Error('SGBD não suportado');
         }
 
-        // const rows = sqlConfig[form.origin].sgbd === 'mssql' ? result.recordset : result.rows;
-        io.log(`[Database] Dados da tabela ${form.tableId} buscados com sucesso, ${rows.length} linhas retornadas`);
+        io.log(`[Database] Query executada com sucesso, ${rows.length} linhas retornadas`);
         return rows;
     } catch (err) {
-        io.log(`[Database] Erro ao buscar dados da tabela ${form.tableId}`);
+        io.log(`[Database] Erro ao executar query`);
         throw err;
     } finally {
-        await closeConnection(form.origin);
+        await closeConnection(origin);
     }
 }
 
@@ -213,5 +223,6 @@ module.exports = {
     closeConnection,
     isQuery,
     extractTableFromQuery,
-    extractFieldsFromQuery
+    extractFieldsFromQuery,
+    executeQuery
 };
